@@ -1,6 +1,6 @@
 # iframe-penetrate-demo
 
-Introduce a technology when an iframe overlapped main content and two pages can still interactive simultaneously, just like they are in the same page.
+Introduce a technology when an iframe overlapped main content and two pages can still interactive simultaneously, just like they are on the same page.
 
 See online [demo](https://troy351.github.io/iframe-penetrate-demo/)
 
