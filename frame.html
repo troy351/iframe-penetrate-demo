@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>frame</title>
+    <link rel="stylesheet" href="./block.css" />
+    <style>
+      .block {
+        background: red;
+      }
+
+      .block:hover {
+        outline: 5px solid coral;
+      }
+
+      .block::after {
+        content: "FRAME";
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container"></div>
+    <script type="module">
+      import { genBlocks } from "./block.js";
+
+      let container = document.getElementById("container");
+
+      genBlocks(container, 50);
+
+      let port;
+
+      const messageHandler = (e) => {
+        if (e.data !== "initChannel") return;
+
+        window.removeEventListener("message", messageHandler);
+
+        port = e.ports[0];
+
+        port.onmessage = (e) => {
+          if (e.data?.type !== "framePoint") return;
+
+          mousemoveHandler(e.data.value);
+        };
+      };
+      window.addEventListener("message", messageHandler);
+
+      const mousemoveHandler = (e) => {
+        if (!port) return;
+
+        // no target value from parent message
+        const target =
+          e.target || document.elementFromPoint(e.clientX, e.clientY);
+
+        port.postMessage({
+          type: "frameVisible",
+          value: target !== container,
+        });
+      };
+
+      window.addEventListener("mousemove", mousemoveHandler);
+    </script>
+  </body>
+</html>

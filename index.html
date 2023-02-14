@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>iframe penetrate demo</title>
+    <link rel="stylesheet" href="./block.css" />
+    <style>
+      .block {
+        background: blue;
+      }
+
+      .block:hover {
+        outline: 5px solid cyan;
+      }
+
+      .block::after {
+        content: "INDEX";
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container"></div>
+    <iframe
+      id="frame"
+      src="./frame.html"
+      frameborder="0"
+      sandbox="allow-scripts"
+    ></iframe>
+    <script type="module">
+      import { genBlocks } from "./block.js";
+
+      genBlocks(document.getElementById("container"), 50);
+
+      const channel = new MessageChannel();
+      channel.port1.onmessage = (e) => {
+        if (e.data?.type !== "frameVisible") return;
+
+        setFrameVisible(e.data.value);
+      };
+
+      const frame = document.getElementById("frame");
+      frame.onload = () => {
+        frame.onload = undefined;
+
+        frame.contentWindow.postMessage("initChannel", "*", [channel.port2]);
+      };
+
+      let frameVisible;
+      function setFrameVisible(val) {
+        frameVisible = val;
+        frame.style.pointerEvents = val ? "visible" : "none";
+      }
+
+      window.addEventListener("mousemove", (e) => {
+        if (frameVisible) return;
+
+        channel.port1.postMessage({
+          type: "framePoint",
+          value: { clientX: e.clientX, clientY: e.clientY },
+        });
+      });
+    </script>
+  </body>
+</html>
